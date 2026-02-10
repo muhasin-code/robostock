@@ -44,15 +44,21 @@ class Beneficiary(models.Model):
     stream = models.CharField(max_length=50, choices=STREAM_CHOICES, blank=True, null=True)
     student_id = models.CharField(max_length=50, blank=True, null=True)
     
+    # Link to auth user (optional)
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, null=True, blank=True, related_name='beneficiary')
+
     # Basic information
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15)
     email = models.EmailField(blank=True, null=True)
+    middle_name = models.CharField(max_length=50, blank=True)
+    designation = models.CharField(max_length=100, blank=True)
+    photo = models.ImageField(upload_to='profiles/', blank=True, null=True)
     
     # Legacy field (kept for compatibility)
     role = models.CharField(max_length=50, blank=True)
     
-    added_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True)
+    added_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, related_name='added_beneficiaries')
     
     class Meta:
         verbose_name_plural = "Beneficiaries"

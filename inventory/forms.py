@@ -1,5 +1,7 @@
 from django import forms
 from .models import Transaction, Component, Beneficiary
+from django.contrib.auth.models import User
+from django import forms
 
 class CheckoutForm(forms.ModelForm):
     class Meta:
@@ -85,3 +87,26 @@ class BeneficiaryForm(forms.ModelForm):
             cleaned_data['student_id'] = None
         
         return cleaned_data
+
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+
+class BeneficiaryProfileForm(forms.ModelForm):
+    class Meta:
+        model = Beneficiary
+        fields = ['phone_number', 'middle_name', 'designation', 'photo']
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter phone number'}),
+            'middle_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Middle name (optional)'}),
+            'designation': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Student, Researcher'}),
+            'photo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
