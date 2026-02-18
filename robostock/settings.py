@@ -94,3 +94,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'dashboard'
+
+
+if os.environ.get("CREATE_SUPERUSER") == "1":
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_superuser(
+            username="murshidbbg",
+            email="bloombergmurshid@gmail.com",
+            password="Murshid@BBG"
+        )
