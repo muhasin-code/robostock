@@ -4,20 +4,20 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-dj7+a9w=g+9y7_(iihn%1b5vqgkr_@2c5e!)6(lue7(_*e-#)4'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dj7+a9w=g+9y7_(iihn%1b5vqgkr_@2c5e!)6(lue7(_*e-#)4')
 
-# Keep True for ngrok demo
-DEBUG = False
+# Set DEBUG to True only if the environment variable is explicitly 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# Allow ngrok and local access
-ALLOWED_HOSTS = ['*']
+# Allow hosts defined in environment variable, default to '*' for wide access if not specified
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 
-# Required for Django 4+ when using HTTPS tunnels like ngrok
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok-free.app",
-    "https://*.ngrok-free.dev",
-]
+# Required for Django 4+ when using HTTPS tunnels like ngrok or Railway
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS', 
+    'https://*.ngrok-free.app,https://*.ngrok-free.dev,https://*.railway.app'
+).split(',')
 
 
 INSTALLED_APPS = [
