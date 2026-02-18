@@ -19,6 +19,11 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
     'https://*.ngrok-free.app,https://*.ngrok-free.dev,https://*.railway.app'
 ).split(',')
 
+# Proxy and Security settings for Railway/Production
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
