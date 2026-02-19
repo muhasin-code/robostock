@@ -1,1 +1,1 @@
-web: gunicorn robostock.wsgi
+web: python manage.py collectstatic --noinput && gunicorn robostock.wsgi
