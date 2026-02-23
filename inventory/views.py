@@ -70,6 +70,18 @@ def edit_component(request, pk):
         form = ComponentForm(instance=component)
     return render(request, 'inventory/component_form.html', {'form': form, 'title': 'Edit Component', 'component': component})
 
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def delete_component(request, pk):
+    component = get_object_or_404(Component, pk=pk)
+    if request.method == 'POST':
+        name = component.name
+        component.delete()
+        messages.success(request, f"Component '{name}' deleted successfully.")
+        return redirect('dashboard')
+    return render(request, 'inventory/component_confirm_delete.html', {'component': component})
+
 @login_required
 def checkout_component(request, pk):
     component = get_object_or_404(Component, pk=pk)
@@ -135,7 +147,34 @@ def add_beneficiary(request):
             return redirect('beneficiary_list')
     else:
         form = BeneficiaryForm()
-    return render(request, 'inventory/beneficiary_form.html', {'form': form})
+    return render(request, 'inventory/beneficiary_form.html', {'form': form, 'title': 'Add Beneficiary'})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def edit_beneficiary(request, pk):
+    beneficiary = get_object_or_404(Beneficiary, pk=pk)
+    if request.method == 'POST':
+        form = BeneficiaryForm(request.POST, instance=beneficiary)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Beneficiary '{beneficiary.name}' updated successfully.")
+            return redirect('beneficiary_detail', pk=beneficiary.pk)
+    else:
+        form = BeneficiaryForm(instance=beneficiary)
+    return render(request, 'inventory/beneficiary_form.html', {'form': form, 'title': 'Edit Beneficiary', 'beneficiary': beneficiary})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def delete_beneficiary(request, pk):
+    beneficiary = get_object_or_404(Beneficiary, pk=pk)
+    if request.method == 'POST':
+        name = beneficiary.name
+        beneficiary.delete()
+        messages.success(request, f"Beneficiary '{name}' deleted successfully.")
+        return redirect('beneficiary_list')
+    return render(request, 'inventory/beneficiary_confirm_delete.html', {'beneficiary': beneficiary})
 
 
 @login_required

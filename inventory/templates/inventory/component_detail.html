@@ -5,7 +5,8 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12 mb-3">
-        <a href="{% url 'dashboard' %}" class="text-decoration-none"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+        <a href="{% url 'dashboard' %}" class="text-decoration-none"><i class="fas fa-arrow-left me-1"></i> Back to
+            Dashboard</a>
     </div>
 </div>
 
@@ -13,11 +14,12 @@
     <div class="row g-0">
         <div class="col-md-5">
             {% if component.image %}
-                <img src="{{ component.image.url }}" class="img-fluid rounded-start h-100" alt="{{ component.name }}" style="object-fit: cover; min-height: 400px;">
+            <img src="{{ component.image.url }}" class="img-fluid rounded-start h-100" alt="{{ component.name }}"
+                style="object-fit: cover; min-height: 400px;">
             {% else %}
-                <div class="bg-light d-flex align-items-center justify-content-center h-100" style="min-height: 400px;">
-                    <i class="fas fa-microchip fa-5x text-secondary"></i>
-                </div>
+            <div class="bg-light d-flex align-items-center justify-content-center h-100" style="min-height: 400px;">
+                <i class="fas fa-microchip fa-5x text-secondary"></i>
+            </div>
             {% endif %}
         </div>
         <div class="col-md-7">
@@ -28,19 +30,21 @@
                         <span class="badge bg-secondary mt-2">{{ component.category.name }}</span>
                     </div>
                 </div>
-                
+
                 <hr>
 
                 <div class="row mb-3">
                     <div class="col-6">
                         <h6 class="text-uppercase text-muted small">Quantity</h6>
-                        <p class="fs-4 fw-bold {% if component.quantity == 0 %}text-danger{% else %}text-success{% endif %}">
+                        <p
+                            class="fs-4 fw-bold {% if component.quantity == 0 %}text-danger{% else %}text-success{% endif %}">
                             {{ component.quantity }}
                         </p>
                     </div>
                     <div class="col-6">
                         <h6 class="text-uppercase text-muted small">Box Number</h6>
-                        <p class="fs-5"><i class="fas fa-box text-primary me-2"></i>{{ component.box_number|default:"Not specified" }}</p>
+                        <p class="fs-5"><i class="fas fa-box text-primary me-2"></i>{{ component.box_number|default:"Not
+                            specified" }}</p>
                     </div>
                 </div>
 
@@ -65,53 +69,62 @@
 
                 <div class="mt-3">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'checkout_component' component.pk %}" class="btn btn-success me-2">
-                            <i class="fas fa-cart-plus me-2"></i>Checkout
-                        </a>
-                        {% if user.is_staff %}
-                         <a href="{% url 'edit_component' component.pk %}" class="btn btn-warning">
-                            <i class="fas fa-edit me-2"></i>Edit
-                        </a>
-                        {% endif %}
+                    {% if user.is_superuser or not user.beneficiary %}
+                    <a href="{% url 'checkout_component' component.pk %}" class="btn btn-success me-2">
+                        <i class="fas fa-cart-plus me-2"></i>Checkout
+                    </a>
+                    {% else %}
+                    <a href="{% url 'checkout_self' component.pk %}" class="btn btn-success me-2">
+                        <i class="fas fa-cart-plus me-2"></i>Checkout
+                    </a>
+                    {% endif %}
+                    {% if user.is_staff %}
+                    <a href="{% url 'edit_component' component.pk %}" class="btn btn-warning me-2">
+                        <i class="fas fa-edit me-2"></i>Edit
+                    </a>
+                    <a href="{% url 'delete_component' component.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Delete
+                    </a>
+                    {% endif %}
                     {% endif %}
                 </div>
-                
+
                 <hr class="my-4">
-                
+
                 <h5 class="mb-3">Active Checkouts</h5>
                 {% if active_transactions %}
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Borrower</th>
-                                    <th>Qty</th>
-                                    <th>Date</th>
-                                    {% if user.is_authenticated %}
-                                        <th>Action</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for t in active_transactions %}
-                                <tr>
-                                    <td>{{ t.borrower.name }}</td>
-                                    <td>{{ t.quantity_taken }}</td>
-                                    <td>{{ t.checkout_time|date:"M d, H:i" }}</td>
-                                    {% if user.is_authenticated %}
-                                        <td>
-                                            <a href="{% url 'return_component' t.pk %}" class="btn btn-outline-success btn-sm">
-                                                Return
-                                            </a>
-                                        </td>
-                                    {% endif %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Borrower</th>
+                                <th>Qty</th>
+                                <th>Date</th>
+                                {% if user.is_authenticated %}
+                                <th>Action</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in active_transactions %}
+                            <tr>
+                                <td>{{ t.borrower.name }}</td>
+                                <td>{{ t.quantity_taken }}</td>
+                                <td>{{ t.checkout_time|date:"M d, H:i" }}</td>
+                                {% if user.is_authenticated %}
+                                <td>
+                                    <a href="{% url 'return_component' t.pk %}" class="btn btn-outline-success btn-sm">
+                                        Return
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                    <p class="text-muted small">No active checkouts.</p>
+                <p class="text-muted small">No active checkouts.</p>
                 {% endif %}
             </div>
         </div>
