@@ -4,102 +4,137 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Add Beneficiary</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" id="beneficiaryForm">
-                    {% csrf_token %}
-                    
-                    <!-- Category Field -->
+    <div class="col-md-10 col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0"><i class="fas fa-hand-holding-heart me-2 text-primary"></i>Add Beneficiary</h1>
+            <a href="{% url 'beneficiary_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+
+        <form method="post" id="beneficiaryForm">
+            {% csrf_token %}
+            
+            <!-- Category & Identification Section -->
+            <div class="card mb-4 border-0">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-id-card me-2"></i>Identification</h5>
+                </div>
+                <div class="card-body p-4">
                     <div class="mb-4">
-                        <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
-                            Category <span class="text-danger">*</span>
+                        <label for="{{ form.category.id_for_label }}" class="form-label small fw-bold text-uppercase">
+                            Beneficiary Category <span class="text-danger small">*</span>
                         </label>
-                        {{ form.category }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-users-cog"></i></span>
+                            {{ form.category }}
+                        </div>
                         {% if form.category.errors %}
                             <div class="text-danger small mt-1">{{ form.category.errors }}</div>
                         {% endif %}
+                        <div class="form-text small">Selecting a category reveals relevant identification fields.</div>
                     </div>
 
-                    <!-- Employee ID Field (shown only for Employees) -->
-                    <div class="mb-3" id="employeeIdField" style="display: none;">
-                        <label for="{{ form.employee_id.id_for_label }}" class="form-label">
-                            Employee ID <span class="text-danger">*</span>
-                        </label>
-                        {{ form.employee_id }}
-                        {% if form.employee_id.errors %}
-                            <div class="text-danger small mt-1">{{ form.employee_id.errors }}</div>
-                        {% endif %}
+                    <div class="row g-3">
+                        <!-- Employee ID Field (shown only for Employees) -->
+                        <div class="col-12" id="employeeIdField" style="display: none;">
+                            <label for="{{ form.employee_id.id_for_label }}" class="form-label small fw-bold text-uppercase">
+                                Employee ID <span class="text-danger small">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-badge-check"></i></span>
+                                {{ form.employee_id }}
+                            </div>
+                            {% if form.employee_id.errors %}
+                                <div class="text-danger small mt-1">{{ form.employee_id.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Stream Field (shown only for Students) -->
+                        <div class="col-md-6" id="streamField" style="display: none;">
+                            <label for="{{ form.stream.id_for_label }}" class="form-label small fw-bold text-uppercase">
+                                Academic Stream <span class="text-danger small">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-graduation-cap"></i></span>
+                                {{ form.stream }}
+                            </div>
+                            {% if form.stream.errors %}
+                                <div class="text-danger small mt-1">{{ form.stream.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Student ID Field (shown only for Students) -->
+                        <div class="col-md-6" id="studentIdField" style="display: none;">
+                            <label for="{{ form.student_id.id_for_label }}" class="form-label small fw-bold text-uppercase">
+                                Student ID <span class="text-danger small">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-university"></i></span>
+                                {{ form.student_id }}
+                            </div>
+                            {% if form.student_id.errors %}
+                                <div class="text-danger small mt-1">{{ form.student_id.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Stream Field (shown only for Students) -->
-                    <div class="mb-3" id="streamField" style="display: none;">
-                        <label for="{{ form.stream.id_for_label }}" class="form-label">
-                            Stream <span class="text-danger">*</span>
+            <!-- Profile Information Section -->
+            <div class="card mb-4 border-0">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-user-circle me-2"></i>Profile Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <label for="{{ form.name.id_for_label }}" class="form-label small fw-bold text-uppercase">
+                            Full Name <span class="text-danger small">*</span>
                         </label>
-                        {{ form.stream }}
-                        {% if form.stream.errors %}
-                            <div class="text-danger small mt-1">{{ form.stream.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Student ID Field (shown only for Students) -->
-                    <div class="mb-3" id="studentIdField" style="display: none;">
-                        <label for="{{ form.student_id.id_for_label }}" class="form-label">
-                            Student ID <span class="text-danger">*</span>
-                        </label>
-                        {{ form.student_id }}
-                        {% if form.student_id.errors %}
-                            <div class="text-danger small mt-1">{{ form.student_id.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <hr class="my-4">
-
-                    <!-- Name Field -->
-                    <div class="mb-3">
-                        <label for="{{ form.name.id_for_label }}" class="form-label">
-                            Full Name <span class="text-danger">*</span>
-                        </label>
-                        {{ form.name }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-user"></i></span>
+                            {{ form.name }}
+                        </div>
                         {% if form.name.errors %}
                             <div class="text-danger small mt-1">{{ form.name.errors }}</div>
                         {% endif %}
                     </div>
 
-                    <!-- Phone Number Field -->
-                    <div class="mb-3">
-                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">
-                            Phone Number <span class="text-danger">*</span>
-                        </label>
-                        {{ form.phone_number }}
-                        {% if form.phone_number.errors %}
-                            <div class="text-danger small mt-1">{{ form.phone_number.errors }}</div>
-                        {% endif %}
-                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label small fw-bold text-uppercase">
+                                Phone Number <span class="text-danger small">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-phone"></i></span>
+                                {{ form.phone_number }}
+                            </div>
+                            {% if form.phone_number.errors %}
+                                <div class="text-danger small mt-1">{{ form.phone_number.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <!-- Email Field (Optional) -->
-                    <div class="mb-4">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">
-                            Email <span class="text-muted small">(Optional)</span>
-                        </label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
-                        {% endif %}
+                        <div class="col-md-6">
+                            <label for="{{ form.email.id_for_label }}" class="form-label small fw-bold text-uppercase">
+                                Email Address <span class="text-muted small fw-normal ms-1">(Optional)</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-envelope"></i></span>
+                                {{ form.email }}
+                            </div>
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
+                </div>
+            </div>
 
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'beneficiary_list' %}" class="btn btn-secondary me-md-2">
-                            <i class="fas fa-times me-1"></i>Cancel
-                        </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save me-1"></i>Save Beneficiary
-                        </button>
-                    </div>
+            <div class="d-grid mb-5">
+                <button type="submit" class="btn btn-primary btn-lg shadow">
+                    <i class="fas fa-save me-2"></i>Save Beneficiary Record
+                </button>
+            </div>
                 </form>
             </div>
         </div>

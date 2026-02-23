@@ -27,6 +27,11 @@
                         <input type="password" name="password" class="form-control" id="id_password" required>
                     </div>
 
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="showPassword">
+                        <label class="form-check-label small text-muted" for="showPassword">Show Password</label>
+                    </div>
+
                     <input type="hidden" name="next" value="{{ next }}">
 
                     <div class="d-grid">
@@ -37,4 +42,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('showPassword').addEventListener('change', function() {
+        const passwordInput = document.getElementById('id_password');
+        passwordInput.type = this.checked ? 'text' : 'password';
+    });
+</script>
 {% endblock %}

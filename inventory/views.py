@@ -9,6 +9,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from django.contrib import messages
 from django.http import JsonResponse
+from .forms import CheckoutForm, ComponentForm, BeneficiaryForm, EnhancedUserCreationForm
+from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
 
 def is_admin(user):
@@ -97,6 +99,36 @@ def checkout_component(request, pk):
             component.quantity -= transaction.quantity_taken
             component.save()
             
+            # Send email notification if borrower has email
+            if transaction.borrower.email:
+                try:
+                    subject = f"RoboStock: Component Checkout Notification - {component.name}"
+                    message = f"""
+Hello {transaction.borrower.name},
+
+You have successfully checked out an item from the RoboStock Laboratory Inventory.
+
+Details:
+- Component: {component.name}
+- Quantity: {transaction.quantity_taken}
+- Checkout Time: {transaction.checkout_time.strftime('%Y-%m-%d %H:%M:%S')}
+- Authorized By: {request.user.get_full_name() or request.user.username}
+
+Please ensure the items are returned in good condition.
+
+Best regards,
+RoboStock Lab Management
+                    """
+                    send_mail(
+                        subject,
+                        message,
+                        None, # Uses DEFAULT_FROM_EMAIL
+                        [transaction.borrower.email],
+                        fail_silently=True,
+                    )
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+
             messages.success(request, f"Checked out {transaction.quantity_taken} of {component.name} to {transaction.borrower.name}")
             return redirect('component_detail', pk=pk)
     else:
@@ -125,6 +157,36 @@ def return_component(request, transaction_id):
         component.quantity += transaction.quantity_taken
         component.save()
         
+        # Send email notification if borrower has email
+        if transaction.borrower.email:
+            try:
+                subject = f"RoboStock: Component Return Confirmation - {component.name}"
+                message = f"""
+Hello {transaction.borrower.name},
+
+This email confirms that you have successfully returned the following item to the RoboStock Laboratory Inventory.
+
+Details:
+- Component: {component.name}
+- Quantity Returned: {transaction.quantity_taken}
+- Return Time: {transaction.return_time.strftime('%Y-%m-%d %H:%M:%S')}
+- Processed By: {request.user.get_full_name() or request.user.username}
+
+Thank you for returning the items on time.
+
+Best regards,
+RoboStock Lab Management
+                """
+                send_mail(
+                    subject,
+                    message,
+                    None, # Uses DEFAULT_FROM_EMAIL
+                    [transaction.borrower.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Error sending return email: {e}")
+
         messages.success(request, f"Returned {transaction.quantity_taken} of {component.name} from {transaction.borrower.name}")
         return redirect('component_detail', pk=component.pk)
     
@@ -254,6 +316,36 @@ def beneficiary_detail(request, pk):
 
 
 @login_required
+def get_beneficiary_data(request, employee_id):
+    """AJAX endpoint to fetch beneficiary data by employee_id or student_id."""
+    # Note: employee_id is the URL parameter name, but we use it as a generic search_id
+    search_id = employee_id
+    try:
+        beneficiary = Beneficiary.objects.filter(
+            Q(employee_id=search_id) | Q(student_id=search_id)
+        ).first()
+        
+        if not beneficiary:
+            return JsonResponse({'exists': False})
+
+        # Try to parse name into first and last
+        name_parts = beneficiary.name.split(' ')
+        first_name = name_parts[0]
+        last_name = ' '.join(name_parts[1:]) if len(name_parts) > 1 else ''
+        
+        return JsonResponse({
+            'exists': True,
+            'name': beneficiary.name,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': beneficiary.email,
+            'designation': beneficiary.designation,
+            'category': beneficiary.category,
+        })
+    except Exception as e:
+        return JsonResponse({'exists': False, 'error': str(e)})
+
+@login_required
 @user_passes_test(is_admin)
 def user_list(request):
     users = User.objects.all().order_by('username')
@@ -264,15 +356,42 @@ def user_list(request):
 @user_passes_test(is_admin)
 def add_user(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = EnhancedUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()  # save() hashes password correctly
+            user = form.save(commit=False)
             user.is_staff = True
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
             user.save()
+            
+            # Check if beneficiary exists for this employee_id
+            employee_id = form.cleaned_data.get('employee_id')
+            beneficiary = None
+            if employee_id:
+                beneficiary = Beneficiary.objects.filter(employee_id=employee_id).first()
+                if beneficiary:
+                    beneficiary.user = user
+                    beneficiary.designation = form.cleaned_data.get('designation')
+                    beneficiary.save()
+            
+            if not beneficiary:
+                # Create new beneficiary
+                Beneficiary.objects.create(
+                    user=user,
+                    employee_id=employee_id,
+                    category='Employee',
+                    name=user.get_full_name(),
+                    email=user.email,
+                    designation=form.cleaned_data.get('designation'),
+                    phone_number='', # Default
+                    added_by=request.user
+                )
+                
             messages.success(request, f"User '{user.username}' created successfully.")
             return redirect('user_list')
     else:
-        form = UserCreationForm()
+        form = EnhancedUserCreationForm()
     return render(request, 'inventory/user_form.html', {'form': form, 'title': 'Add User'})
 
 

@@ -4,54 +4,165 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Checkout Component</h4>
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">{{ component.name }}</h5>
-                <p class="text-muted">Serial: {{ component.serial_number|default:"N/A" }} | Box: {{ component.box_number|default:"N/A" }}</p>
-                <div class="alert alert-info">
-                    Available Quantity: <strong>{{ component.quantity }}</strong>
-                </div>
+    <div class="col-md-8 col-lg-6">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0"><i class="fas fa-shopping-cart me-2 text-primary"></i>Checkout</h1>
+            <a href="{% url 'component_detail' component.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-times me-1"></i>Cancel
+            </a>
+        </div>
 
-                <form method="post">
+        <div class="card shadow border-0 overflow-hidden mb-4">
+            <div class="card-header bg-primary bg-gradient text-white py-3">
+                <h5 class="mb-0 card-title"><i class="fas fa-info-circle me-2"></i>Component Info</h5>
+            </div>
+            <div class="card-body p-4 bg-light bg-opacity-10">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="flex-grow-1">
+                        <h4 class="fw-bold mb-1 text-primary">{{ component.name }}</h4>
+                        <div class="text-muted small">
+                            <span class="me-3"><i class="fas fa-barcode me-1"></i>{{ component.serial_number|default:"N/A" }}</span>
+                            <span><i class="fas fa-box me-1"></i>{{ component.box_number|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small text-uppercase text-muted fw-bold">Available</div>
+                        <div class="h3 fw-bold mb-0 {% if component.quantity < 5 %}text-warning{% else %}text-success{% endif %}">
+                            {{ component.quantity }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow border-0 overflow-hidden">
+            <div class="card-header bg-transparent py-3">
+                <h5 class="mb-0 text-primary"><i class="fas fa-clipboard-list me-2"></i>Transaction Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" id="checkoutForm">
                     {% csrf_token %}
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Checkout Date</label>
-                        <div class="alert alert-light">
-                            <i class="fas fa-calendar-day me-2"></i>{{ current_date|date:"F d, Y" }}
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase">Checkout Date</label>
+                        <div class="alert alert-light border mb-0 py-2">
+                            <i class="fas fa-calendar-day me-2 text-primary"></i>{{ current_date|date:"F d, Y" }}
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="{{ form.borrower.id_for_label }}" class="form-label">Select Borrower <span class="text-danger">*</span></label>
-                        {{ form.borrower }}
+                    <div class="card mb-4 border bg-light bg-opacity-50">
+                        <div class="card-body p-3">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="{{ form.borrower_id.id_for_label }}" class="form-label small fw-bold text-uppercase">Borrower ID Search</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-id-card"></i></span>
+                                        {{ form.borrower_id }}
+                                    </div>
+                                    <div id="idFeedback" class="form-text mt-2"></div>
+                                </div>
+                                <div class="col-md-12" id="foundBorrowerContainer" style="display: none;">
+                                    <label class="form-label small fw-bold text-uppercase">Found Borrower</label>
+                                    <div class="alert alert-success border-success mb-0 py-2 d-flex align-items-center">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <span id="foundBorrowerName" class="fw-bold"></span>
+                                        <span id="foundBorrowerCategory" class="badge bg-success ms-auto"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4" id="dropdownContainer">
+                        <label for="{{ form.borrower.id_for_label }}" class="form-label small fw-bold text-uppercase">{{ form.borrower.label }} <span class="text-danger small">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-users"></i></span>
+                            {{ form.borrower }}
+                        </div>
                         {% if form.borrower.errors %}
-                            <div class="text-danger small">{{ form.borrower.errors }}</div>
+                            <div class="text-danger small mt-1">{{ form.borrower.errors }}</div>
                         {% endif %}
-                        <div class="form-text">
-                            <a href="{% url 'add_beneficiary' %}" target="_blank" class="text-decoration-none">
-                                <i class="fas fa-plus-circle me-1"></i>Add new borrower
-                            </a>
+                        <div class="form-text small mt-2">
+                            Use the Search ID field above for Students & Employees, or select an Intern/Other from this list.
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="{{ form.quantity_taken.id_for_label }}" class="form-label">Quantity <span class="text-danger">*</span></label>
-                        {{ form.quantity_taken }}
+                    <div class="mb-5">
+                        <label for="{{ form.quantity_taken.id_for_label }}" class="form-label small fw-bold text-uppercase">Quantity to Take <span class="text-danger small">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-cubes"></i></span>
+                            {{ form.quantity_taken }}
+                        </div>
                         {% if form.quantity_taken.errors %}
-                            <div class="text-danger small">{{ form.quantity_taken.errors }}</div>
+                            <div class="text-danger small mt-1">{{ form.quantity_taken.errors }}</div>
                         {% endif %}
+                        <div class="form-text small">Maximum allowed: {{ component.quantity }}</div>
                     </div>
                     
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Confirm Checkout</button>
-                        <a href="{% url 'component_detail' component.pk %}" class="btn btn-secondary">Cancel</a>
+                    <div class="d-grid shadow-sm">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check-circle me-2"></i>Confirm Checkout
+                        </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const borrowerIdInput = document.getElementById('{{ form.borrower_id.id_for_label }}');
+        const borrowerSelect = document.getElementById('{{ form.borrower.id_for_label }}');
+        const feedback = document.getElementById('idFeedback');
+        const foundContainer = document.getElementById('foundBorrowerContainer');
+        const foundName = document.getElementById('foundBorrowerName');
+        const foundCategory = document.getElementById('foundBorrowerCategory');
+        const dropdownContainer = document.getElementById('dropdownContainer');
+
+        let timeout = null;
+
+        borrowerIdInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            const id = this.value.trim();
+            
+            if (!id) {
+                feedback.innerHTML = '';
+                foundContainer.style.display = 'none';
+                dropdownContainer.style.display = 'block';
+                return;
+            }
+
+            timeout = setTimeout(() => {
+                feedback.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Searching...';
+                feedback.className = 'form-text text-info mt-2';
+
+                fetch(`/api/beneficiary/data/${id}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            foundName.textContent = data.name;
+                            foundCategory.textContent = data.category;
+                            foundContainer.style.display = 'block';
+                            dropdownContainer.style.display = 'none';
+                            feedback.innerHTML = '<i class="fas fa-check-circle me-1"></i>Borrower identified successfully.';
+                            feedback.className = 'form-text text-success mt-2';
+                        } else {
+                            foundContainer.style.display = 'none';
+                            dropdownContainer.style.display = 'block';
+                            feedback.innerHTML = '<i class="fas fa-info-circle me-1"></i>No Student/Employee found with this ID. Please use the dropdown below.';
+                            feedback.className = 'form-text text-muted mt-2';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching borrower data:', error);
+                        feedback.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error searching for ID.';
+                        feedback.className = 'form-text text-danger mt-2';
+                    });
+            }, 500);
+        });
+    });
+</script>
             </div>
         </div>
     </div>

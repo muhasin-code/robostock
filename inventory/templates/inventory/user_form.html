@@ -3,41 +3,167 @@
 {% block title %}Add User - RoboStock{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-user-plus me-2"></i>Add User</h1>
-    <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">Back to Users</a>
-</div>
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0"><i class="fas fa-user-plus me-2 text-primary"></i>Add New User</h1>
+            <a href="{% url 'user_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Back to Users
+            </a>
+        </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form method="post">
+        <form method="post" id="userForm">
             {% csrf_token %}
-            <div class="mb-3">
-                {{ form.username.label_tag }}
-                {{ form.username }}
-                {% for error in form.username.errors %}
-                    <div class="text-danger small">{{ error }}</div>
-                {% endfor %}
+            
+            <!-- Employee Context Section -->
+            <div class="card mb-4 border-0">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-id-card-alt me-2"></i>Employee Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_employee_id" class="form-label small fw-bold text-uppercase">Employee ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-search"></i></span>
+                                <input type="text" name="employee_id" class="form-control border-start-0" id="id_employee_id" placeholder="Enter ID to autocomplete...">
+                            </div>
+                            <div id="autocompleteFeedback" class="form-text mt-2"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_designation" class="form-label small fw-bold text-uppercase">Designation</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-briefcase"></i></span>
+                                <input type="text" name="designation" class="form-control border-start-0" id="id_designation" placeholder="e.g., Faculty, Lab Technician">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="id_first_name" class="form-label small fw-bold text-uppercase">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_last_name" class="form-label small fw-bold text-uppercase">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="col-12">
+                            <label for="id_email" class="form-label small fw-bold text-uppercase">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-envelope"></i></span>
+                                <input type="email" name="email" class="form-control border-start-0" id="id_email" placeholder="email@example.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="mb-3">
-                {{ form.password1.label_tag }}
-                {{ form.password1 }}
-                {% for error in form.password1.errors %}
-                    <div class="text-danger small">{{ error }}</div>
-                {% endfor %}
+            <!-- Account Security Section -->
+            <div class="card mb-4 border-0">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-user-shield me-2"></i>Account Credentials</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <label for="id_username" class="form-label small fw-bold text-uppercase">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-user"></i></span>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                            {% for error in form.username.errors %}
+                                <div class="text-danger small mt-1"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="form-text small">Use only lowercase letters, numbers, dots (.), hyphens (-), and underscores (_).</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_password1" class="form-label small fw-bold text-uppercase">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-key"></i></span>
+                                {{ form.password1 }}
+                            </div>
+                            {% for error in form.password1.errors %}
+                                <div class="text-danger small mt-1"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_password2" class="form-label small fw-bold text-uppercase">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-check-double"></i></span>
+                                {{ form.password2 }}
+                            </div>
+                            {% for error in form.password2.errors %}
+                                <div class="text-danger small mt-1"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="form-check form-switch ps-5">
+                            <input type="checkbox" class="form-check-input" id="showPasswords">
+                            <label class="form-check-label small text-muted" for="showPasswords">Show passwords</label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="mb-3">
-                {{ form.password2.label_tag }}
-                {{ form.password2 }}
-                {% for error in form.password2.errors %}
-                    <div class="text-danger small">{{ error }}</div>
-                {% endfor %}
+            <div class="d-grid mb-5">
+                <button class="btn btn-primary btn-lg shadow" type="submit">
+                    <i class="fas fa-user-check me-2"></i>Finalize and Create User
+                </button>
             </div>
-
-            <button class="btn btn-primary" type="submit"><i class="fas fa-save me-1"></i>Create User</button>
         </form>
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('showPasswords').addEventListener('change', function() {
+        const passwordInputs = document.querySelectorAll('input[type="password"], input[type="text"]');
+        passwordInputs.forEach(input => {
+            if (input.name.includes('password')) {
+                input.type = this.checked ? 'text' : 'password';
+            }
+        });
+    });
+
+    // Autocompletion logic for Employee ID
+    const employeeIdInput = document.getElementById('id_employee_id');
+    const feedback = document.getElementById('autocompleteFeedback');
+    
+    employeeIdInput.addEventListener('blur', function() {
+        const id = this.value.trim();
+        if (!id) return;
+        
+        feedback.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Searching...';
+        feedback.className = 'form-text text-info';
+
+        fetch(`/api/beneficiary/data/${id}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    document.getElementById('id_first_name').value = data.first_name;
+                    document.getElementById('id_last_name').value = data.last_name;
+                    document.getElementById('id_email').value = data.email;
+                    document.getElementById('id_designation').value = data.designation;
+                    
+                    feedback.innerHTML = '<i class="fas fa-check-circle me-1"></i>Beneficiary found! Fields autocompleted.';
+                    feedback.className = 'form-text text-success';
+                } else {
+                    feedback.innerHTML = '<i class="fas fa-info-circle me-1"></i>No beneficiary found with this ID. Please enter details manually.';
+                    feedback.className = 'form-text text-muted';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching beneficiary data:', error);
+                feedback.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error searching for beneficiary.';
+                feedback.className = 'form-text text-danger';
+            });
+    });
+</script>
+{% endblock %}
+
